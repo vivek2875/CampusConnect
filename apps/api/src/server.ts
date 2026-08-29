@@ -2,6 +2,7 @@ import http from 'node:http';
 
 import { app } from './app';
 import { createChatGateway } from './modules/chat/presentation/socket.gateway';
+import { ensureDefaultTenant } from './modules/tenants/application/tenant-bootstrap';
 import { env } from './config/env';
 import { logger } from './observability/logger';
 import { connectRedis, disconnectRedis } from './shared/cache/redis';
@@ -10,6 +11,10 @@ import { connectMongo, disconnectMongo } from './shared/persistence/mongo';
 async function start(): Promise<void> {
   await connectMongo();
   await connectRedis();
+  if (env.INITIALIZE_DATABASE_ON_START) {
+    const tenant = await ensureDefaultTenant();
+    logger.info({ tenantId: tenant.id, slug: tenant.slug }, 'Demo tenant is ready');
+  }
 
   const server = http.createServer(app);
   const io = await createChatGateway(server);

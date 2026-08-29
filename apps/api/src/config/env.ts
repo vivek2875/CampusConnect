@@ -14,6 +14,9 @@ const environmentSchema = z
     MONGODB_URI: z.string().url(),
     REDIS_URL: z.string().url(),
     CLIENT_ORIGIN: z.string().url(),
+    SERVE_WEB_CLIENT: booleanFromEnvironment.default('false'),
+    WEB_DIST_PATH: optionalEnvironmentValue(z.string().trim().min(1)),
+    INITIALIZE_DATABASE_ON_START: booleanFromEnvironment.default('false'),
     JWT_ACCESS_SECRET: z.string().min(32),
     JWT_ACCESS_TTL: z
       .string()
@@ -62,6 +65,14 @@ const environmentSchema = z
         code: z.ZodIssueCode.custom,
         path: ['SMTP_URL'],
         message: 'SMTP_URL is required in production.',
+      });
+    }
+
+    if (value.SERVE_WEB_CLIENT && !value.WEB_DIST_PATH) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['WEB_DIST_PATH'],
+        message: 'WEB_DIST_PATH is required when SERVE_WEB_CLIENT is true.',
       });
     }
 

@@ -1,5 +1,7 @@
 import { TenantModel, type TenantDocument } from './tenant.model';
 
+export type { TenantDocument } from './tenant.model';
+
 export const tenantRepository = {
   findActiveBySlug(slug: string): Promise<TenantDocument | null> {
     return TenantModel.findOne({ slug, status: 'active' }).exec();

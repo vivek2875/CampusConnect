@@ -23,6 +23,7 @@ import { errorHandler } from './shared/http/error-handler';
 import { notFoundHandler } from './shared/http/not-found';
 import { requestContext } from './shared/http/request-context';
 import { apiRateLimit } from './shared/http/rate-limit';
+import { registerStaticClient } from './shared/http/static-client';
 import { redis } from './shared/cache/redis';
 
 export const app = express();
@@ -91,5 +92,6 @@ app.use('/api/v1', aiRouter);
 app.use('/api/v1', adminRouter);
 app.use('/api/v1/marketplace', marketplaceRouter);
 app.use('/api/v1/marketplace', offerRouter);
+registerStaticClient(app);
 app.use(notFoundHandler);
 app.use(errorHandler);

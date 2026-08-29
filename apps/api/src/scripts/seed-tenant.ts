@@ -1,15 +1,10 @@
-import { env } from '../config/env';
-import { tenantRepository } from '../modules/tenants/infrastructure/tenant.repository';
+import { ensureDefaultTenant } from '../modules/tenants/application/tenant-bootstrap';
 import { logger } from '../observability/logger';
 import { connectMongo, disconnectMongo } from '../shared/persistence/mongo';
 
 async function seedTenant(): Promise<void> {
   await connectMongo();
-  const tenant = await tenantRepository.createIfMissing({
-    name: env.SEED_TENANT_NAME,
-    slug: env.DEFAULT_TENANT_SLUG,
-    allowedEmailDomain: env.SEED_TENANT_DOMAIN,
-  });
+  const tenant = await ensureDefaultTenant();
   logger.info({ tenantId: tenant.id, slug: tenant.slug }, 'Tenant is ready');
   await disconnectMongo();
 }
