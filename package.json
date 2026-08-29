@@ -1,0 +1,19 @@
+{
+  "name": "campusconnect",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CampusConnect - the super app for college campuses",
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @campusconnect/api --filter @campusconnect/web dev",
+    "build": "pnpm --filter @campusconnect/api build && pnpm --filter @campusconnect/web build",
+    "typecheck": "pnpm --filter @campusconnect/api typecheck",
+    "test": "pnpm --filter @campusconnect/api test",
+    "lint": "pnpm --filter @campusconnect/api lint && pnpm --filter @campusconnect/web lint",
+    "format": "prettier --write \"**/*.{ts,js,json,css,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,json,css,md,yml,yaml}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.7.4"
+  }
+}

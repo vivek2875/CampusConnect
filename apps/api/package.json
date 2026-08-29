@@ -1,0 +1,51 @@
+{
+  "name": "@campusconnect/api",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "seed:tenant": "tsx src/scripts/seed-tenant.ts",
+    "db:create-indexes": "tsx src/scripts/create-indexes.ts"
+  },
+  "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
+    "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.7.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.1",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.6.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.16.1",
+    "nodemailer": "^7.0.5",
+    "pino": "^9.7.0",
+    "pino-http": "^10.5.0",
+    "rate-limit-redis": "^4.2.1",
+    "socket.io": "^4.8.1",
+    "web-push": "3.6.7",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.0.14",
+    "@types/nodemailer": "^6.4.17",
+    "@types/web-push": "3.6.4",
+    "supertest": "^7.1.1",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}

@@ -1,0 +1,77 @@
+services:
+  mongo:
+    image: mongo:8.0
+    restart: unless-stopped
+    command: ['mongod', '--replSet', 'rs0', '--bind_ip_all']
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mongo-init:
+    image: mongo:8.0
+    depends_on:
+      mongo:
+        condition: service_healthy
+    command: >
+      mongosh --host mongo --eval
+      "try { rs.status(); } catch (error) { rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'mongo:27017'}]}); }"
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    env_file: .env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/campusconnect?replicaSet=rs0
+      REDIS_URL: redis://redis:6379
+      CLIENT_ORIGIN: http://localhost
+      COOKIE_SECURE: 'false'
+      TRUST_PROXY_HOPS: '1'
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:4000/health/ready').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    ports:
+      - '80:80'
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+  redis_data:
