@@ -67,15 +67,21 @@ h2 {
   text-decoration: none;
   letter-spacing: -0.035em;
 }
-.brand__mark {
+.brand__logo {
   display: grid;
   width: 2rem;
   height: 2rem;
   place-items: center;
   border-radius: 0.7rem;
-  color: #102b5c;
-  background: #f7ce62;
-  font-weight: 850;
+  overflow: hidden;
+  background: #fff;
+  flex: 0 0 auto;
+}
+.brand__logo img {
+  width: 220%;
+  height: 220%;
+  max-width: none;
+  object-fit: contain;
 }
 .brand--dark {
   color: #102b5c;

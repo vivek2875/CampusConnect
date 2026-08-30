@@ -1,4 +1,5 @@
 import { apiClient } from '../lib/api-client.js';
+import { campusBrandMarkup } from '../lib/brand.js';
 import { createElement, setFormMessage } from '../lib/dom.js';
 
 export function renderResetPasswordPage(navigate) {
@@ -55,7 +56,7 @@ export function renderVerifyEmailPage(navigate) {
 function recoveryShell(title, description) {
   const page = createElement('section', { className: 'recovery-layout' });
   page.innerHTML = `
-    <a class="brand brand--dark" href="/" data-link><span class="brand__mark">C</span>CampusConnect</a>
+    ${campusBrandMarkup({ dark: true })}
     <section class="recovery-card"><p class="eyebrow">Secure account access</p><h1>${title}</h1><p class="muted">${description}</p><div data-recovery-content></div></section>`;
   return page;
 }

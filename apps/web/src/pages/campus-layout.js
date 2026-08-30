@@ -1,4 +1,5 @@
 import { apiClient } from '../lib/api-client.js';
+import { campusBrandMarkup } from '../lib/brand.js';
 import { createElement } from '../lib/dom.js';
 import { sessionStore } from '../lib/session-store.js';
 
@@ -7,7 +8,7 @@ export function createCampusLayout({ active, navigate }) {
   const isAdmin = role === 'admin' || role === 'super_admin';
   const page = createElement('section', { className: 'dashboard-shell' });
   page.innerHTML = `
-    <header class="topbar"><a class="brand brand--dark" href="/dashboard" data-link><span class="brand__mark">C</span>CampusConnect</a><button class="button button--quiet" data-logout>Sign out</button></header>
+    <header class="topbar">${campusBrandMarkup({ dashboardHome: true, dark: true })}<button class="button button--quiet" data-logout>Sign out</button></header>
     <div class="dashboard-layout">
       <aside class="sidebar" aria-label="Primary navigation"><p class="eyebrow">Campus space</p><nav>
         <a class="nav-link ${active === 'overview' ? 'nav-link--active' : ''}" href="/dashboard" data-link>Overview</a>

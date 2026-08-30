@@ -1,4 +1,5 @@
 import { apiClient } from '../lib/api-client.js';
+import { campusBrandMarkup } from '../lib/brand.js';
 import { createElement, formValue, setFormMessage } from '../lib/dom.js';
 import { sessionStore } from '../lib/session-store.js';
 
@@ -8,7 +9,7 @@ export function renderAuthPage(mode, navigate) {
   const content = createElement('section', { className: 'auth-layout' });
   content.innerHTML = `
     <aside class="brand-panel" aria-label="CampusConnect">
-      <a class="brand" href="/" data-link><span class="brand__mark">C</span>CampusConnect</a>
+      ${campusBrandMarkup()}
       <div class="brand-panel__content">
         <p class="eyebrow">One connected campus</p>
         <h1>Everything campus, in one secure place.</h1>
