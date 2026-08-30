@@ -8,7 +8,7 @@ export function renderDashboardPage(navigate) {
   const { page, content } = createCampusLayout({ active: 'overview', navigate });
   const verificationActions = session.user.emailVerified
     ? ''
-    : '<button class="button button--secondary" data-resend>Resend verification email</button><p class="form-message" data-status hidden></p>';
+    : '<button class="button button--secondary" data-resend>Send verification email</button><p class="form-message" data-status hidden></p>';
   content.innerHTML = `<p class="eyebrow">Your campus</p><h1>Welcome, <span data-name></span>.</h1><p class="muted">Your account is ready for the CampusConnect experience.</p><section class="dashboard-grid"><article class="profile-card"><h2>Account</h2><dl><div><dt>Institution email</dt><dd data-email></dd></div><div><dt>Role</dt><dd data-role></dd></div><div><dt>Email status</dt><dd data-verification></dd></div></dl>${verificationActions}</article><article class="next-card"><span class="icon-disc">→</span><h2>Marketplace is ready</h2><p>Find second-hand essentials, discover great value, and post items your campus needs.</p><a class="button button--secondary" href="/marketplace" data-link>Explore Marketplace</a></article></section>`;
 
   page.querySelector('[data-name]').textContent = session.user.firstName;
