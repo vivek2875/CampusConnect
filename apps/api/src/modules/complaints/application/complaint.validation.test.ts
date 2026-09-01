@@ -16,6 +16,21 @@ describe('Complaint validation', () => {
     expect(result.success).toBe(false);
   });
 
+  it('accepts the configured academic complaint departments', () => {
+    const result = createComplaintSchema.safeParse({
+      body: {
+        title: 'Computer lab projector issue',
+        description: 'The projector in the CSE laboratory is not turning on for class.',
+        department: 'cse',
+        images: [],
+      },
+      params: {},
+      query: {},
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   it('accepts only defined complaint states', () => {
     expect(
       updateComplaintStatusSchema.safeParse({

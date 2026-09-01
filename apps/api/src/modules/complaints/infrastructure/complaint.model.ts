@@ -7,6 +7,7 @@ import type {
   ComplaintPriority,
   ComplaintStatus,
 } from '../domain/complaint.types';
+import { complaintDepartments } from '../domain/complaint.types';
 
 export interface ComplaintPersistence {
   _id: Types.ObjectId;
@@ -35,7 +36,7 @@ const intelligenceSchema = new Schema<ComplaintIntelligence>(
   {
     provider: { type: String, required: true, enum: ['gemini', 'rules'] },
     summary: { type: String, required: true, maxlength: 500 },
-    suggestedDepartment: { type: String, required: true, enum: ['electrical', 'civil', 'internet', 'mess', 'cleaning', 'water'] },
+    suggestedDepartment: { type: String, required: true, enum: [...complaintDepartments] },
     suggestedPriority: { type: String, required: true, enum: ['low', 'normal', 'high', 'urgent'] },
     estimatedResolutionHours: { type: Number, required: true, min: 1, max: 720 },
     duplicateCandidateIds: { type: [String], required: true, default: [] },
@@ -49,7 +50,7 @@ const complaintSchema = new Schema<ComplaintPersistence>(
     reporterId: { type: Schema.Types.ObjectId, ref: 'User', required: true, immutable: true },
     title: { type: String, required: true, trim: true, minlength: 3, maxlength: 140 },
     description: { type: String, required: true, trim: true, minlength: 10, maxlength: 4_000 },
-    department: { type: String, required: true, enum: ['electrical', 'civil', 'internet', 'mess', 'cleaning', 'water'] },
+    department: { type: String, required: true, enum: [...complaintDepartments] },
     priority: { type: String, required: true, enum: ['low', 'normal', 'high', 'urgent'], default: 'normal' },
     status: { type: String, required: true, enum: ['pending', 'assigned', 'in_progress', 'resolved', 'closed'], default: 'pending' },
     images: {

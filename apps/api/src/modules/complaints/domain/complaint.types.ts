@@ -1,4 +1,15 @@
-export const complaintDepartments = ['electrical', 'civil', 'internet', 'mess', 'cleaning', 'water'] as const;
+export const complaintDepartments = [
+  'electrical',
+  'civil',
+  'internet',
+  'mess',
+  'cleaning',
+  'water',
+  'cse',
+  'ece',
+  'metallurgy',
+  'production',
+] as const;
 export const complaintPriorities = ['low', 'normal', 'high', 'urgent'] as const;
 export const complaintStatuses = ['pending', 'assigned', 'in_progress', 'resolved', 'closed'] as const;
 

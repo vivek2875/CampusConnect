@@ -1,15 +1,7 @@
 import { apiClient } from '../lib/api-client.js';
+import { complaintDepartments } from '../lib/complaint-departments.js';
 import { setFormMessage } from '../lib/dom.js';
 import { createCampusLayout } from './campus-layout.js';
-
-const departments = [
-  ['electrical', 'Electrical'],
-  ['civil', 'Civil'],
-  ['internet', 'Internet'],
-  ['mess', 'Mess'],
-  ['cleaning', 'Cleaning'],
-  ['water', 'Water'],
-];
 
 export function renderComplaintEditorPage(navigate) {
   const { page, content } = createCampusLayout({ active: 'complaints', navigate });
@@ -18,7 +10,7 @@ export function renderComplaintEditorPage(navigate) {
   const select = form.querySelector('[name="department"]');
   const message = form.querySelector('[data-message]');
   const submit = form.querySelector('[type="submit"]');
-  departments.forEach(([value, label]) => {
+  complaintDepartments.forEach(([value, label]) => {
     const option = document.createElement('option');
     option.value = value;
     option.textContent = label;

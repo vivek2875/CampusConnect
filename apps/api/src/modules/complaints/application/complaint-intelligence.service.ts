@@ -1,11 +1,16 @@
 import { z } from 'zod';
 
 import { generateGeminiJson } from '../../../shared/ai/gemini';
-import type { ComplaintDepartment, ComplaintIntelligence, ComplaintPriority } from '../domain/complaint.types';
+import {
+  complaintDepartments,
+  type ComplaintDepartment,
+  type ComplaintIntelligence,
+  type ComplaintPriority,
+} from '../domain/complaint.types';
 
 const analysisSchema = z.object({
   summary: z.string().trim().min(8).max(500),
-  suggestedDepartment: z.enum(['electrical', 'civil', 'internet', 'mess', 'cleaning', 'water']),
+  suggestedDepartment: z.enum(complaintDepartments),
   suggestedPriority: z.enum(['low', 'normal', 'high', 'urgent']),
   estimatedResolutionHours: z.number().int().min(1).max(720),
 });
@@ -22,7 +27,7 @@ export async function analyzeComplaint(input: {
     prompt: {
       title: input.title,
       description: input.description,
-      allowedDepartments: ['electrical', 'civil', 'internet', 'mess', 'cleaning', 'water'],
+      allowedDepartments: complaintDepartments,
       allowedPriorities: ['low', 'normal', 'high', 'urgent'],
       requiredFields: ['summary', 'suggestedDepartment', 'suggestedPriority', 'estimatedResolutionHours'],
     },
@@ -56,6 +61,10 @@ function classifyDepartment(content: string, fallback: ComplaintDepartment): Com
     mess: ['food', 'meal', 'mess', 'canteen', 'kitchen'],
     cleaning: ['clean', 'garbage', 'dust', 'waste', 'toilet', 'hygiene'],
     water: ['water', 'tap', 'leak', 'drain', 'pipe', 'flush'],
+    cse: ['cse', 'computer science', 'computer lab', 'programming lab', 'software', 'coding'],
+    ece: ['ece', 'electronics', 'communication lab', 'circuit lab', 'embedded systems'],
+    metallurgy: ['metallurgy', 'metallurgical', 'material science', 'foundry', 'metal lab'],
+    production: ['production', 'manufacturing', 'workshop', 'machine shop', 'lathe'],
   };
   const ranked = Object.entries(terms)
     .map(([department, keywords]) => [department, keywords.filter((keyword) => content.includes(keyword)).length] as const)
