@@ -129,6 +129,19 @@ export const listingRepository = {
     ).exec();
   },
 
+  restoreOwned(tenantId: string, sellerId: string, listingId: string): Promise<ListingDocument | null> {
+    return ListingModel.findOneAndUpdate(
+      trustServerQuery({
+        _id: listingId,
+        tenantId: new Types.ObjectId(tenantId),
+        sellerId: new Types.ObjectId(sellerId),
+        status: 'archived',
+      }),
+      { $set: { status: 'active' } },
+      { new: true, runValidators: true },
+    ).exec();
+  },
+
   incrementEngagement(tenantId: string, listingId: string, kind: EngagementKind, amount: 1 | -1): Promise<void> {
     const field = kind === 'like' ? 'counts.likeCount' : 'counts.wishlistCount';
     return ListingModel.updateOne({ _id: listingId, tenantId: new Types.ObjectId(tenantId) }, { $inc: { [field]: amount } })

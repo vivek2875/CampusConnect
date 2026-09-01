@@ -13,6 +13,7 @@ export function createCampusLayout({ active, navigate }) {
       <aside class="sidebar" aria-label="Primary navigation"><p class="eyebrow">Campus space</p><nav>
         <a class="nav-link ${active === 'overview' ? 'nav-link--active' : ''}" href="/dashboard" data-link>Overview</a>
         <a class="nav-link ${active === 'marketplace' ? 'nav-link--active' : ''}" href="/marketplace" data-link>Marketplace</a>
+        <a class="nav-link ${active === 'my-listings' ? 'nav-link--active' : ''}" href="/marketplace/mine" data-link>My listings</a>
         <a class="nav-link ${active === 'offers' ? 'nav-link--active' : ''}" href="/offers" data-link>Offers</a>
         <a class="nav-link ${active === 'wishlist' ? 'nav-link--active' : ''}" href="/wishlist" data-link>Saved items</a>
         <a class="nav-link ${active === 'complaints' ? 'nav-link--active' : ''}" href="/complaints" data-link>Complaints</a>

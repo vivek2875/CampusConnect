@@ -161,6 +161,24 @@ marketplaceRouter.delete(
   }),
 );
 
+marketplaceRouter.post(
+  '/listings/:listingId/restore',
+  requireAuth,
+  requireCsrf,
+  validate(listingIdSchema),
+  asyncHandler(async (request, response) => {
+    const auth = getAuth(request);
+    response.status(200).json({
+      data: await marketplaceService.restoreListing({
+        tenantId: auth.tenantId,
+        sellerId: auth.userId,
+        listingId: String(request.params.listingId),
+        ip: request.ip,
+      }),
+    });
+  }),
+);
+
 for (const engagement of ['like', 'wishlist'] as const) {
   marketplaceRouter.post(
     `/listings/:listingId/${engagement}s`,

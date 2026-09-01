@@ -81,7 +81,7 @@ export const marketplaceService = {
   },
 
   async getMyListings(input: ListingPageInput & { status?: ListingStatus }) {
-    const statuses: ListingStatus[] = input.status ? [input.status] : ['active', 'reserved', 'sold'];
+    const statuses: ListingStatus[] = input.status ? [input.status] : ['active', 'reserved', 'sold', 'archived'];
     const result = await listingRepository.findPage({
       tenantId: input.tenantId,
       sellerId: input.userId,
@@ -139,6 +139,20 @@ export const marketplaceService = {
       targetId: listing.id,
       ip: input.ip,
     });
+  },
+
+  async restoreListing(input: { tenantId: string; sellerId: string; listingId: string; ip?: string }) {
+    const listing = await listingRepository.restoreOwned(input.tenantId, input.sellerId, input.listingId);
+    if (!listing) throw listingNotFoundError();
+    recordAuditEvent({
+      tenantId: input.tenantId,
+      actorId: input.sellerId,
+      action: 'MARKETPLACE_LISTING_RESTORED',
+      targetType: 'MarketplaceListing',
+      targetId: listing.id,
+      ip: input.ip,
+    });
+    return this.getListing({ tenantId: input.tenantId, userId: input.sellerId, listingId: listing.id });
   },
 
   async addEngagement(input: { tenantId: string; userId: string; listingId: string; kind: EngagementKind }): Promise<void> {

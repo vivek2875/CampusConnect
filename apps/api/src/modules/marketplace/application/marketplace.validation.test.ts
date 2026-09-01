@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createListingSchema, listListingsSchema, recommendationsSchema } from './marketplace.validation';
+import { createListingSchema, listListingsSchema, listMyListingsSchema, recommendationsSchema } from './marketplace.validation';
 
 describe('Marketplace validation', () => {
   it('rejects duplicate image references and malformed listing payloads', () => {
@@ -31,5 +31,11 @@ describe('Marketplace validation', () => {
   it('bounds recommendation feed requests', () => {
     expect(recommendationsSchema.safeParse({ body: {}, params: {}, query: { limit: '8' } }).success).toBe(true);
     expect(recommendationsSchema.safeParse({ body: {}, params: {}, query: { limit: '21' } }).success).toBe(false);
+  });
+
+  it('allows listing owners to retrieve archived listings for restoration', () => {
+    const result = listMyListingsSchema.safeParse({ body: {}, params: {}, query: { status: 'archived' } });
+
+    expect(result.success).toBe(true);
   });
 });

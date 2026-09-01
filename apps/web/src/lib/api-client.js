@@ -96,6 +96,11 @@ class ApiClient {
     return this.#send(`/marketplace/listings/${listingId}`, { method: 'DELETE', authenticated: true, csrf: true });
   }
 
+  async restoreMarketplaceListing(listingId) {
+    this.#requireCsrfToken();
+    return this.#send(`/marketplace/listings/${listingId}/restore`, { method: 'POST', authenticated: true, csrf: true });
+  }
+
   async setListingEngagement(listingId, kind, enabled) {
     this.#requireCsrfToken();
     const pluralKind = kind === 'like' ? 'likes' : 'wishlists';

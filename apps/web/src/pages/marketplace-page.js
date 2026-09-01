@@ -14,7 +14,7 @@ const categories = [
 ];
 
 export function renderMarketplacePage(navigate, { mine = false, wishlist = false } = {}) {
-  const active = wishlist ? 'wishlist' : 'marketplace';
+  const active = wishlist ? 'wishlist' : mine ? 'my-listings' : 'marketplace';
   const { page, content } = createCampusLayout({ active, navigate });
   const title = wishlist ? 'Saved items' : mine ? 'My listings' : 'Campus Marketplace';
   content.innerHTML = `
@@ -114,7 +114,7 @@ function createListingCard(listing, { mine, navigate, refresh }) {
   const body = createElement('div', { className: 'listing-card__body' });
   const meta = createElement('p', {
     className: 'listing-card__meta',
-    text: `${labelFor(listing.category)} · ${labelFor(listing.condition)}`,
+    text: `${labelFor(listing.category)} · ${labelFor(listing.condition)}${mine ? ` · ${labelFor(listing.status)}` : ''}`,
   });
   const title = createElement('h2', { text: listing.title });
   const price = createElement('p', { className: 'listing-card__price', text: formatPrice(listing.price.amountMinor) });
@@ -125,22 +125,41 @@ function createListingCard(listing, { mine, navigate, refresh }) {
   const actions = createElement('div', { className: 'listing-card__actions' });
 
   if (mine) {
-    const edit = createElement('a', {
-      className: 'button button--secondary',
-      text: 'Edit',
-      attributes: { href: `/marketplace/${listing.id}/edit`, 'data-link': '' },
-    });
-    const archive = createElement('button', { className: 'button button--quiet', text: 'Archive', attributes: { type: 'button' } });
-    archive.addEventListener('click', async () => {
-      archive.disabled = true;
-      try {
-        await apiClient.archiveMarketplaceListing(listing.id);
-        await refresh();
-      } finally {
-        archive.disabled = false;
-      }
-    });
-    actions.append(edit, archive);
+    if (listing.status === 'archived') {
+      const restore = createElement('button', {
+        className: 'button button--primary',
+        text: 'Restore listing',
+        attributes: { type: 'button' },
+      });
+      restore.addEventListener('click', async () => {
+        restore.disabled = true;
+        try {
+          await apiClient.restoreMarketplaceListing(listing.id);
+          await refresh();
+        } finally {
+          restore.disabled = false;
+        }
+      });
+      actions.append(restore);
+    } else {
+      const edit = createElement('a', {
+        className: 'button button--secondary',
+        text: 'Edit',
+        attributes: { href: `/marketplace/${listing.id}/edit`, 'data-link': '' },
+      });
+      const archive = createElement('button', { className: 'button button--quiet', text: 'Archive', attributes: { type: 'button' } });
+      archive.addEventListener('click', async () => {
+        if (!window.confirm('Archive this listing? Buyers will no longer be able to find it.')) return;
+        archive.disabled = true;
+        try {
+          await apiClient.archiveMarketplaceListing(listing.id);
+          await refresh();
+        } finally {
+          archive.disabled = false;
+        }
+      });
+      actions.append(edit, archive);
+    }
   } else {
     actions.append(createEngagementButton(listing, 'like'), createEngagementButton(listing, 'wishlist'));
     if (listing.seller && listing.seller.id !== sessionStore.get().user.id) {
