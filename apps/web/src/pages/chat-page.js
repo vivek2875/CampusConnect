@@ -9,13 +9,36 @@ let clearChatListeners = () => {};
 export function renderChatPage(navigate) {
   clearChatListeners();
   const { page, content } = createCampusLayout({ active: 'chat', navigate });
-  content.innerHTML =
-    '<section class="marketplace-header"><div><p class="eyebrow">Campus conversations</p><h1>Messages</h1><p class="muted">Private chats stay within your campus community.</p></div></section><p class="form-message" data-message hidden></p><section class="chat-shell"><aside class="conversation-list" data-conversations aria-label="Conversations"></aside><section class="chat-panel" data-panel><p class="empty-state">Choose a conversation to begin.</p></section></section>';
+  content.innerHTML = `
+    <section class="marketplace-header">
+      <div><p class="eyebrow">Campus conversations</p><h1>Messages</h1><p class="muted">Private chats stay within your campus community.</p></div>
+      <button class="button button--primary" type="button" data-new-conversation>New message</button>
+    </section>
+    <p class="form-message" data-message hidden></p>
+    <section class="chat-recipient-picker" data-recipient-picker hidden>
+      <form class="recipient-search" data-recipient-search>
+        <label>Find a campus member<input name="query" type="search" minlength="2" maxlength="80" autocomplete="off" placeholder="Search by first or last name" required /></label>
+        <button class="button button--secondary" type="submit">Search</button>
+      </form>
+      <div class="recipient-results" data-recipient-results aria-live="polite"></div>
+    </section>
+    <section class="chat-shell"><aside class="conversation-list" data-conversations aria-label="Conversations"></aside><section class="chat-panel" data-panel><p class="empty-state">Choose a conversation to begin.</p></section></section>`;
+
   const list = content.querySelector('[data-conversations]');
   const panel = content.querySelector('[data-panel]');
   const message = content.querySelector('[data-message]');
+  const newConversationButton = content.querySelector('[data-new-conversation]');
+  const recipientPicker = content.querySelector('[data-recipient-picker]');
+  const recipientSearch = content.querySelector('[data-recipient-search]');
+  const recipientResults = content.querySelector('[data-recipient-results]');
   const state = { conversations: [], selected: null, messages: [], socket: null, isOtherTyping: false };
   const requestedListingId = new URLSearchParams(window.location.search).get('listing');
+
+  function setRecipientPickerVisible(visible) {
+    recipientPicker.hidden = !visible;
+    newConversationButton.setAttribute('aria-expanded', String(visible));
+    if (visible) recipientSearch.elements.query.focus();
+  }
 
   async function loadConversations({ selectId } = {}) {
     try {
@@ -68,6 +91,37 @@ export function renderChatPage(navigate) {
     renderChatPanel(panel, state, submitMessage);
   }
 
+  async function searchRecipients(event) {
+    event.preventDefault();
+    const query = new FormData(recipientSearch).get('query').trim();
+    if (query.length < 2) return;
+    const submit = recipientSearch.querySelector('button');
+    submit.disabled = true;
+    recipientResults.replaceChildren(createElement('p', { className: 'empty-state', text: 'Searching campus members…' }));
+    try {
+      const recipients = await apiClient.searchChatRecipients(query);
+      renderRecipientResults(recipientResults, recipients, startDirectConversation);
+    } catch (error) {
+      recipientResults.replaceChildren(
+        createElement('p', { className: 'empty-state', text: error.message || 'Unable to search campus members.' }),
+      );
+    } finally {
+      submit.disabled = false;
+    }
+  }
+
+  async function startDirectConversation(recipientId) {
+    try {
+      const conversation = await apiClient.createConversation({ recipientId });
+      recipientSearch.reset();
+      recipientResults.replaceChildren();
+      setRecipientPickerVisible(false);
+      await loadConversations({ selectId: conversation.id });
+    } catch (error) {
+      setFormMessage(message, error.message || 'Unable to start this conversation.');
+    }
+  }
+
   function connectSocket() {
     const accessToken = sessionStore.get().accessToken;
     const socket = getChatSocket(accessToken);
@@ -97,8 +151,8 @@ export function renderChatPage(navigate) {
     const onMessagesRead = ({ conversationId }) => {
       if (document.contains(page) && conversationId === state.selected?.id) {
         const currentUserId = sessionStore.get().user.id;
-        state.messages.forEach((message) => {
-          if (message.senderId === currentUserId) message.readAt ||= new Date().toISOString();
+        state.messages.forEach((messageItem) => {
+          if (messageItem.senderId === currentUserId) messageItem.readAt ||= new Date().toISOString();
         });
         renderChatPanel(panel, state, submitMessage);
       }
@@ -128,15 +182,40 @@ export function renderChatPage(navigate) {
     }
   }
 
+  newConversationButton.addEventListener('click', () => setRecipientPickerVisible(recipientPicker.hidden));
+  recipientSearch.addEventListener('submit', (event) => void searchRecipients(event));
   connectSocket();
   void loadConversations().then(openRequestedListing);
   return page;
 }
 
+function renderRecipientResults(container, recipients, onSelect) {
+  container.replaceChildren();
+  if (!recipients.length)
+    return container.append(
+      createElement('p', {
+        className: 'empty-state',
+        text: 'No active campus members match that name. They must have an account in this campus before you can message them.',
+      }),
+    );
+  recipients.forEach((recipient) => {
+    const button = createElement('button', { className: 'recipient-result', attributes: { type: 'button' } });
+    const role = recipient.role.replace(/_/g, ' ');
+    button.append(
+      createElement('strong', { text: `${recipient.firstName} ${recipient.lastName}` }),
+      createElement('span', { text: `${role.charAt(0).toUpperCase()}${role.slice(1)}${recipient.emailVerified ? ' · Verified' : ''}` }),
+    );
+    button.addEventListener('click', () => onSelect(recipient.id));
+    container.append(button);
+  });
+}
+
 function renderConversationList(container, conversations, selectedId, onSelect) {
   container.replaceChildren();
   if (!conversations.length)
-    return container.append(createElement('p', { className: 'empty-state', text: 'Start a chat from a marketplace listing.' }));
+    return container.append(
+      createElement('p', { className: 'empty-state', text: 'No conversations yet. Choose New message to contact a campus member.' }),
+    );
   conversations.forEach((conversation) => {
     const button = createElement('button', {
       className: `conversation-list__item ${conversation.id === selectedId ? 'conversation-list__item--active' : ''}`,

@@ -42,6 +42,21 @@ export const userRepository = {
       .exec();
   },
 
+  findActiveChatRecipients(input: { tenantId: string; excludedUserId: string; query: string; limit: number }): Promise<UserDocument[]> {
+    return UserModel.find(
+      trustServerQuery({
+        tenantId: new Types.ObjectId(input.tenantId),
+        status: 'active',
+        _id: { $ne: new Types.ObjectId(input.excludedUserId) },
+        $text: { $search: input.query },
+      }),
+    )
+      .select('firstName lastName role emailVerifiedAt')
+      .sort({ score: { $meta: 'textScore' }, firstName: 1, lastName: 1, _id: 1 })
+      .limit(input.limit)
+      .exec();
+  },
+
   async findAdminPage(input: {
     tenantId: string;
     limit: number;

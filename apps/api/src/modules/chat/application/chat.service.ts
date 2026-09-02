@@ -7,6 +7,21 @@ import { chatRepository } from '../infrastructure/chat.repository';
 
 export const chatService = {
   getUploadSignature: createChatUploadSignature,
+  async searchRecipients(input: { tenantId: string; userId: string; query: string; limit: number }) {
+    const users = await userRepository.findActiveChatRecipients({
+      tenantId: input.tenantId,
+      excludedUserId: input.userId,
+      query: input.query,
+      limit: input.limit,
+    });
+    return users.map((user) => ({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      emailVerified: Boolean(user.emailVerifiedAt),
+    }));
+  },
   async createConversation(input: { tenantId: string; userId: string; recipientId?: string; listingId?: string }) {
     let recipientId = input.recipientId;
     if (input.listingId) {

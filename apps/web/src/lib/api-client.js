@@ -250,6 +250,10 @@ class ApiClient {
     return { conversations: result.data, nextCursor: result.meta?.nextCursor || null };
   }
 
+  async searchChatRecipients(query, limit = 10) {
+    return this.#send(`/chat/recipients${toQueryString({ query, limit })}`, { method: 'GET', authenticated: true });
+  }
+
   async createConversation(data) {
     this.#requireCsrfToken();
     return this.#send('/conversations', { method: 'POST', data, authenticated: true, csrf: true });
@@ -277,9 +281,9 @@ class ApiClient {
     return this.#uploadSignedImage('/chat/uploads/signature', file);
   }
 
-  async askCampusAssistant(question) {
+  async askCampusAssistant(messages) {
     this.#requireCsrfToken();
-    return this.#send('/ai/assistant', { method: 'POST', data: { question }, authenticated: true, csrf: true });
+    return this.#send('/ai/assistant', { method: 'POST', data: { messages }, authenticated: true, csrf: true });
   }
 
   async estimateMarketplacePrice(data) {

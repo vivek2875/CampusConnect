@@ -9,6 +9,7 @@ import { createChatUploadSignature } from '../../../shared/storage/cloudinary';
 import { chatService } from '../application/chat.service';
 import {
   conversationIdSchema,
+  chatRecipientPageSchema,
   conversationPageSchema,
   createConversationSchema,
   messagePageSchema,
@@ -23,6 +24,19 @@ chatRouter.post(
   asyncHandler(async (request, response) => {
     const auth = getAuth(request);
     response.status(200).json({ data: createChatUploadSignature({ tenantId: auth.tenantId, userId: auth.userId }) });
+  }),
+);
+chatRouter.get(
+  '/chat/recipients',
+  requireAuth,
+  validate(chatRecipientPageSchema),
+  asyncHandler(async (request, response) => {
+    const auth = getAuth(request);
+    const limit = Number(request.query.limit);
+    const query = String(request.query.query);
+    response.status(200).json({
+      data: await chatService.searchRecipients({ tenantId: auth.tenantId, userId: auth.userId, query, limit }),
+    });
   }),
 );
 chatRouter.get(

@@ -14,7 +14,8 @@ aiRouter.post(
   aiRateLimit,
   validate(assistantSchema),
   asyncHandler(async (request, response) => {
-    response.status(200).json({ data: await aiService.answer(request.body.question) });
+    const messages = request.body.messages ?? [{ role: 'user' as const, content: request.body.question }];
+    response.status(200).json({ data: await aiService.answer({ messages }) });
   }),
 );
 aiRouter.post(

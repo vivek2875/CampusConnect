@@ -50,6 +50,10 @@ const userSchema = new Schema<UserPersistence>(
 userSchema.index({ tenantId: 1, email: 1 }, { unique: true });
 userSchema.index({ tenantId: 1, role: 1, status: 1 });
 userSchema.index({ tenantId: 1, createdAt: -1, _id: -1 });
+userSchema.index(
+  { tenantId: 1, status: 1, firstName: 'text', lastName: 'text' },
+  { name: 'user_chat_recipient_search', default_language: 'none' },
+);
 
 export type UserDocument = HydratedDocument<UserPersistence>;
 export const UserModel = models.User ?? model<UserPersistence>('User', userSchema);
