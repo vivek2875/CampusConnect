@@ -31,18 +31,14 @@ export const authService = {
     const tenant = await getRequiredActiveTenant(input.tenantSlug);
     ensurePermittedEmailDomain(input.email, tenant.allowedEmailDomains);
 
-    const verificationToken = createOpaqueToken();
     const user = await userRepository.create({
       tenantId: tenant._id,
       firstName: input.firstName,
       lastName: input.lastName,
       email: input.email,
       passwordHash: await hashPassword(input.password),
-      emailVerificationTokenHash: hashOpaqueToken(verificationToken),
-      emailVerificationExpiresAt: new Date(Date.now() + EMAIL_TOKEN_TTL_MS),
     });
 
-    await sendVerificationEmail(user.email, verificationToken);
     recordAuditEvent({
       tenantId: tenant.id,
       actorId: user.id,

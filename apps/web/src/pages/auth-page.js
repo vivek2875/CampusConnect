@@ -59,7 +59,7 @@ function renderLogin(panel, navigate) {
 function renderRegister(panel, navigate) {
   panel.innerHTML = `
     <p class="eyebrow">Join your campus</p><h2>Create your account</h2>
-    <p class="muted">We’ll send a verification link to your institution email.</p>
+    <p class="muted">After creating your account, use Send verification email from your dashboard.</p>
     <form class="stack" novalidate>
       ${tenantField()}
       <div class="field-row"><label>First name<input name="firstName" autocomplete="given-name" required /></label><label>Last name<input name="lastName" autocomplete="family-name" required /></label></div>

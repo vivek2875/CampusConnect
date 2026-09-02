@@ -12,8 +12,8 @@ export const userRepository = {
     email: string;
     passwordHash: string;
     role?: 'student';
-    emailVerificationTokenHash: string;
-    emailVerificationExpiresAt: Date;
+    emailVerificationTokenHash?: string;
+    emailVerificationExpiresAt?: Date;
   }): Promise<UserDocument> {
     return UserModel.create(input);
   },
