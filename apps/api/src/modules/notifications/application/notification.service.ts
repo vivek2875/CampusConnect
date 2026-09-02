@@ -8,8 +8,22 @@ import { pushService } from './push.service';
 import { decodeCursor, encodeCursor } from '../../../shared/pagination/cursor';
 
 export const notificationService = {
-  create(input: { tenantId: string; recipientId: string; type: NotificationType; title: string; body: string; link?: string }): void {
-    void deliverNotification(input);
+  async create(input: {
+    tenantId: string;
+    recipientId: string;
+    type: NotificationType;
+    title: string;
+    body: string;
+    link?: string;
+  }): Promise<ReturnType<typeof toNotification> | null> {
+    try {
+      const notification = await notificationRepository.create(input);
+      void deliverExternalNotification(input);
+      return toNotification(notification);
+    } catch (error) {
+      logger.error({ err: error, notificationType: input.type, recipientId: input.recipientId }, 'Notification creation failed');
+      return null;
+    }
   },
   async list(input: { tenantId: string; recipientId: string; limit: number; cursor?: string }) {
     const result = await notificationRepository.findPage({
@@ -31,7 +45,7 @@ export const notificationService = {
 
 const emailEligibleTypes = new Set<NotificationType>(['complaint_assigned', 'complaint_updated', 'event_registration', 'lost_found_claim']);
 
-async function deliverNotification(input: {
+async function deliverExternalNotification(input: {
   tenantId: string;
   recipientId: string;
   type: NotificationType;
@@ -40,7 +54,6 @@ async function deliverNotification(input: {
   link?: string;
 }): Promise<void> {
   try {
-    await notificationRepository.create(input);
     await pushService.send(input);
     if (!emailEligibleTypes.has(input.type)) return;
 
@@ -55,9 +68,7 @@ async function deliverNotification(input: {
     logger.error({ err: error, notificationType: input.type, recipientId: input.recipientId }, 'Notification delivery failed');
   }
 }
-function toNotification(
-  notification: Awaited<ReturnType<typeof notificationRepository.markRead>> extends infer T ? Exclude<T, null> : never,
-) {
+function toNotification(notification: Awaited<ReturnType<typeof notificationRepository.create>>) {
   return {
     id: notification.id,
     type: notification.type,

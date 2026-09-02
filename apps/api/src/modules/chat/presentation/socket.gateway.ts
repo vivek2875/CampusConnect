@@ -51,6 +51,9 @@ export async function createChatGateway(server: HttpServer): Promise<Server> {
             ...result.message,
             conversationId: payload.conversationId,
           });
+          if (result.notification && result.recipientId) {
+            io.to(`user:${result.recipientId}`).emit('notification:new', result.notification);
+          }
           result.participantIds.forEach((participantId) =>
             io.to(`user:${participantId}`).emit('conversation:updated', { conversationId: payload.conversationId }),
           );

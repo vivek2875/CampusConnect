@@ -88,16 +88,22 @@ export const chatService = {
     });
     await chatRepository.touchConversation(input.tenantId, input.conversationId, text?.slice(0, 200) ?? 'Image');
     const recipientId = conversation.participantIds.map((id) => id.toString()).find((id) => id !== input.userId);
-    if (recipientId)
-      notificationService.create({
-        tenantId: input.tenantId,
-        recipientId,
-        type: 'chat_message',
-        title: 'New message',
-        body: text?.slice(0, 120) ?? 'Sent an image',
-        link: '/chat',
-      });
-    return { message: toMessage(message), participantIds: conversation.participantIds.map((id) => id.toString()) };
+    const notification = recipientId
+      ? await notificationService.create({
+          tenantId: input.tenantId,
+          recipientId,
+          type: 'chat_message',
+          title: 'New message',
+          body: 'Someone sent you a new message. Open Messages to reply.',
+          link: '/chat',
+        })
+      : null;
+    return {
+      message: toMessage(message),
+      participantIds: conversation.participantIds.map((id) => id.toString()),
+      ...(recipientId ? { recipientId } : {}),
+      ...(notification ? { notification } : {}),
+    };
   },
   async markRead(input: { tenantId: string; userId: string; conversationId: string }) {
     await requireConversation(input);

@@ -1,9 +1,14 @@
 import { apiClient } from '../lib/api-client.js';
 import { createElement, setFormMessage } from '../lib/dom.js';
 import { createPushSubscription } from '../lib/push-client.js';
+import { sessionStore } from '../lib/session-store.js';
+import { getChatSocket } from '../lib/socket-client.js';
 import { createCampusLayout } from './campus-layout.js';
 
+let clearNotificationListener = () => {};
+
 export function renderNotificationsPage(navigate) {
+  clearNotificationListener();
   const { page, content } = createCampusLayout({ active: 'notifications', navigate });
   content.innerHTML =
     '<section class="marketplace-header"><div><p class="eyebrow">Stay informed</p><h1>Notifications</h1><p class="muted">Updates from the things that matter to you on campus.</p></div><button class="button button--secondary" data-enable-push hidden>Enable push</button></section><p class="form-message" data-message hidden></p><section class="notification-list" data-notifications aria-live="polite"></section><div class="load-more"><button class="button button--secondary" data-load-more hidden>Load more</button></div>';
@@ -33,7 +38,21 @@ export function renderNotificationsPage(navigate) {
       more.disabled = false;
     }
   }
-  void load();
+
+  function connectLiveUpdates() {
+    const accessToken = sessionStore.get()?.accessToken;
+    if (!accessToken) return;
+    const socket = getChatSocket(accessToken);
+    const onNotification = (notification) => {
+      if (!document.contains(page) || state.notifications.some((entry) => entry.id === notification.id)) return;
+      state.notifications = [notification, ...state.notifications];
+      renderNotifications(list, state.notifications, navigate);
+    };
+    socket.on('notification:new', onNotification);
+    clearNotificationListener = () => socket.off('notification:new', onNotification);
+  }
+
+  void load().then(connectLiveUpdates);
   return page;
 }
 
