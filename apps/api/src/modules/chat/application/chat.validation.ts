@@ -32,6 +32,16 @@ export const conversationPageSchema = z.object({
   params: z.object({}).strict(),
   query: z.object({ limit: z.coerce.number().int().min(1).max(50).default(20), cursor: z.string().min(1).max(200).optional() }).strict(),
 });
+export const chatRecipientPageSchema = z.object({
+  body: z.object({}).strict(),
+  params: z.object({}).strict(),
+  query: z
+    .object({
+      query: z.string().trim().min(2).max(80),
+      limit: z.coerce.number().int().min(1).max(20).default(10),
+    })
+    .strict(),
+});
 export const messagePageSchema = z.object({
   body: z.object({}).strict(),
   params: z.object({ conversationId: objectId }).strict(),
